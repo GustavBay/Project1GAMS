@@ -1,0 +1,606 @@
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   1  Sets
+   2     n 'Nodes'   / Node1, Node2, Node3 /
+   3     a 'Assets'  / Cash,  Bonds, DStock, IStock /
+   4     Alias(a,ap);
+   5   
+   6  Parameters
+   7  Vv(a) 'Target Variance Value for each Asset'
+   8          / Cash               0.00008836
+   9            Bonds               0.00006724
+  10            DStock             0.0001790244
+  11            IStock             0.00024649 /
+  12   
+  13  Vm(a) 'Target Mean Value for each Asset'
+  14          / Cash                0.050
+  15            Bonds                0.065
+  16            DStock              0.071
+  17            IStock              0.075 /;
+  18   
+  19  Table cr(a,ap) 'Target Correlations'
+  20                          Cash                   Bonds                DStock              IStock
+  21     Cash                 1.0                      0.6                 -0.2                -0.1
+  22     Bonds                0.6                      1.0                 -0.3                -0.2
+  23     DStock              -0.2                     -0.3                  1.0                 0.6
+  24     IStock              -0.1                     -0.2                  0.6                 1.0
+  25     ;
+  26   
+  27  Scalar ProbM 'Probability from parent' / 1 /
+  28         Wm 'Mean Weight' / 1/
+  29         Wv 'Variance Weight' /1/
+  30         Wc 'Correlation Weight' /1/
+  31         Wmr 'Mean Reversion Weight' /0.5/
+  32         Rb 'Return on bonds last period' /0.065/
+  33         MRL 'Mean Reversion Level' /0.0591/;
+  34   
+  35  Free Variables
+  36     R(n,a) 'Realisation of asset at node'
+  37     z      'total squared error';
+  38   
+  39  Positive Variables
+  40     P(n)   'Probability of Node'
+  41     M(a)   'Mean of asset'
+  42     V(a)   'Variance of asset'
+  43     C(a,ap)   'Variance of asset'
+  44     ;
+  45  Equation
+  46     cost      'SquaredError'
+  47     mean(a)   'Mean definition'
+  48     Prob   'Probability of Paren'
+  49     NonEq 'dont want probs to be equal'
+  50     NonSmall(n) 'dont want too small probs'
+  51     corr(a,ap)   'Correlation definition'
+  52     variance(a) 'Variance definition'
+  53  ;
+  54   
+  55  cost..      z =e=  Wm*sum(a,sqr(M(a)-Vm(a)))+Wv*sum(a,sqr(V(a)-Vv(a)))  + Wc*sum((a,ap),sqr(C(a,ap)-cr(a,ap)))
+  56  +Wmr*sqr(M('Bonds')-(0.3*MRL+(1-0.3)*Rb))    ;
+  57   
+  58  prob.. sum(n, P(n)) =e= ProbM   ;
+  59  mean(a).. sum(n, P(n)*R(n,a)) =e= M(a);
+  60  variance(a).. sum(n,   P(n)*sqr(R(n,a)-M(a) ) ) =e= V(a);
+  61  corr(a,ap).. sum(n,   P(n)*(R(n,a)-M(a) )*(R(n,ap)-M(ap)  ) )/sqrt(Vv(a)*Vv(ap)) =e= C(a,ap);
+  62   
+  63  NonEq.. P('Node2') =g= P('Node1')*0.5+0.5*P('Node3');
+  64  NonSmall(n).. P(n) =g= 0.1;
+  65   
+  66   
+  67  Model Matching / all /;
+  68   
+  69  solve Matching using nlp minimizing z;
+  70   
+  71  display R.l,P.l ;
+
+
+COMPILATION TIME     =        0.001 SECONDS      3 MB  25.1.1 r66732 DEX-DEG
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE Matching Using NLP From line 69
+
+
+---- cost  =E=  SquaredError
+
+cost..  z + (0.1)*M(Cash) + (0.19323)*M(Bonds) + (0.142)*M(DStock) + (0.15)*M(IStock) + (0.00017672)*V(Cash) + (0.00013448)*V(Bonds) + (0.0003580488)*V(DStock) + (0.00049298)*V(IStock) + (2)*C(Cash,Cash) + (1.2)*C(Cash,Bonds) - (0.4)*C(Cash,DStock)
+     
+      - (0.2)*C(Cash,IStock) + (1.2)*C(Bonds,Cash) + (2)*C(Bonds,Bonds) - (0.6)*C(Bonds,DStock) - (0.4)*C(Bonds,IStock) - (0.4)*C(DStock,Cash) - (0.6)*C(DStock,Bonds) + (2)*C(DStock,DStock) + (1.2)*C(DStock,IStock) - (0.2)*C(IStock,Cash)
+     
+      - (0.4)*C(IStock,Bonds) + (1.2)*C(IStock,DStock) + (2)*C(IStock,IStock) =E= 0 ; (LHS = -5.81939012158576, INFES = 5.81939012158576 ****)
+     
+
+---- mean  =E=  Mean definition
+
+mean(Cash)..  (0)*R(Node1,Cash) + (0)*R(Node2,Cash) + (0)*R(Node3,Cash) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) - M(Cash) =E= 0 ; (LHS = 0)
+     
+mean(Bonds)..  (0)*R(Node1,Bonds) + (0)*R(Node2,Bonds) + (0)*R(Node3,Bonds) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) - M(Bonds) =E= 0 ; (LHS = 0)
+     
+mean(DStock)..  (0)*R(Node1,DStock) + (0)*R(Node2,DStock) + (0)*R(Node3,DStock) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) - M(DStock) =E= 0 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- Prob  =E=  Probability of Paren
+
+Prob..  P(Node1) + P(Node2) + P(Node3) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+
+---- NonEq  =G=  dont want probs to be equal
+
+NonEq..  - 0.5*P(Node1) + P(Node2) - 0.5*P(Node3) =G= 0 ; (LHS = 0)
+     
+
+---- NonSmall  =G=  dont want too small probs
+
+NonSmall(Node1)..  P(Node1) =G= 0.1 ; (LHS = 0, INFES = 0.1 ****)
+     
+NonSmall(Node2)..  P(Node2) =G= 0.1 ; (LHS = 0, INFES = 0.1 ****)
+     
+NonSmall(Node3)..  P(Node3) =G= 0.1 ; (LHS = 0, INFES = 0.1 ****)
+     
+
+---- corr  =E=  Correlation definition
+
+corr(Cash,Cash)..  (0)*R(Node1,Cash) + (0)*R(Node2,Cash) + (0)*R(Node3,Cash) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(Cash) - C(Cash,Cash) =E= 0 ; (LHS = 0)
+     
+corr(Cash,Bonds)..  (0)*R(Node1,Cash) + (0)*R(Node1,Bonds) + (0)*R(Node2,Cash) + (0)*R(Node2,Bonds) + (0)*R(Node3,Cash) + (0)*R(Node3,Bonds) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(Cash) + (0)*M(Bonds) - C(Cash,Bonds) =E= 0 ; (LHS = 0)
+     
+corr(Cash,DStock)..  (0)*R(Node1,Cash) + (0)*R(Node1,DStock) + (0)*R(Node2,Cash) + (0)*R(Node2,DStock) + (0)*R(Node3,Cash) + (0)*R(Node3,DStock) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(Cash) + (0)*M(DStock) - C(Cash,DStock) =E= 0 ; (LHS = 0)
+     
+REMAINING 13 ENTRIES SKIPPED
+
+
+---- variance  =E=  Variance definition
+
+variance(Cash)..  (0)*R(Node1,Cash) + (0)*R(Node2,Cash) + (0)*R(Node3,Cash) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(Cash) - V(Cash) =E= 0 ; (LHS = 0)
+     
+variance(Bonds)..  (0)*R(Node1,Bonds) + (0)*R(Node2,Bonds) + (0)*R(Node3,Bonds) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(Bonds) - V(Bonds) =E= 0 ; (LHS = 0)
+     
+variance(DStock)..  (0)*R(Node1,DStock) + (0)*R(Node2,DStock) + (0)*R(Node3,DStock) + (0)*P(Node1) + (0)*P(Node2) + (0)*P(Node3) + (0)*M(DStock) - V(DStock) =E= 0 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE Matching Using NLP From line 69
+
+
+---- R  Realisation of asset at node
+
+R(Node1,Cash)
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+       (0)      mean(Cash)
+       (0)      corr(Cash,Cash)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Cash,IStock)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(DStock,Cash)
+       (0)      corr(IStock,Cash)
+       (0)      variance(Cash)
+
+R(Node1,Bonds)
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+       (0)      mean(Bonds)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(Bonds,Bonds)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(Bonds,IStock)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(IStock,Bonds)
+       (0)      variance(Bonds)
+
+R(Node1,DStock)
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+       (0)      mean(DStock)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(DStock,Cash)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(DStock,DStock)
+       (0)      corr(DStock,IStock)
+       (0)      corr(IStock,DStock)
+       (0)      variance(DStock)
+
+REMAINING 9 ENTRIES SKIPPED
+
+---- z  total squared error
+
+z
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       cost
+
+
+---- P  Probability of Node
+
+P(Node1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0)      mean(Cash)
+       (0)      mean(Bonds)
+       (0)      mean(DStock)
+       (0)      mean(IStock)
+        1       Prob
+       -0.5     NonEq
+        1       NonSmall(Node1)
+       (0)      corr(Cash,Cash)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Cash,IStock)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(Bonds,Bonds)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(Bonds,IStock)
+       (0)      corr(DStock,Cash)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(DStock,DStock)
+       (0)      corr(DStock,IStock)
+       (0)      corr(IStock,Cash)
+       (0)      corr(IStock,Bonds)
+       (0)      corr(IStock,DStock)
+       (0)      corr(IStock,IStock)
+       (0)      variance(Cash)
+       (0)      variance(Bonds)
+       (0)      variance(DStock)
+       (0)      variance(IStock)
+
+P(Node2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0)      mean(Cash)
+       (0)      mean(Bonds)
+       (0)      mean(DStock)
+       (0)      mean(IStock)
+        1       Prob
+        1       NonEq
+        1       NonSmall(Node2)
+       (0)      corr(Cash,Cash)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Cash,IStock)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(Bonds,Bonds)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(Bonds,IStock)
+       (0)      corr(DStock,Cash)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(DStock,DStock)
+       (0)      corr(DStock,IStock)
+       (0)      corr(IStock,Cash)
+       (0)      corr(IStock,Bonds)
+       (0)      corr(IStock,DStock)
+       (0)      corr(IStock,IStock)
+       (0)      variance(Cash)
+       (0)      variance(Bonds)
+       (0)      variance(DStock)
+       (0)      variance(IStock)
+
+P(Node3)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0)      mean(Cash)
+       (0)      mean(Bonds)
+       (0)      mean(DStock)
+       (0)      mean(IStock)
+        1       Prob
+       -0.5     NonEq
+        1       NonSmall(Node3)
+       (0)      corr(Cash,Cash)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Cash,IStock)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(Bonds,Bonds)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(Bonds,IStock)
+       (0)      corr(DStock,Cash)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(DStock,DStock)
+       (0)      corr(DStock,IStock)
+       (0)      corr(IStock,Cash)
+       (0)      corr(IStock,Bonds)
+       (0)      corr(IStock,DStock)
+       (0)      corr(IStock,IStock)
+       (0)      variance(Cash)
+       (0)      variance(Bonds)
+       (0)      variance(DStock)
+       (0)      variance(IStock)
+
+
+---- M  Mean of asset
+
+M(Cash)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.1)    cost
+       -1       mean(Cash)
+       (0)      corr(Cash,Cash)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Cash,IStock)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(DStock,Cash)
+       (0)      corr(IStock,Cash)
+       (0)      variance(Cash)
+
+M(Bonds)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.1932) cost
+       -1       mean(Bonds)
+       (0)      corr(Cash,Bonds)
+       (0)      corr(Bonds,Cash)
+       (0)      corr(Bonds,Bonds)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(Bonds,IStock)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(IStock,Bonds)
+       (0)      variance(Bonds)
+
+M(DStock)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.142)  cost
+       -1       mean(DStock)
+       (0)      corr(Cash,DStock)
+       (0)      corr(Bonds,DStock)
+       (0)      corr(DStock,Cash)
+       (0)      corr(DStock,Bonds)
+       (0)      corr(DStock,DStock)
+       (0)      corr(DStock,IStock)
+       (0)      corr(IStock,DStock)
+       (0)      variance(DStock)
+
+REMAINING ENTRY SKIPPED
+
+---- V  Variance of asset
+
+V(Cash)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.0002) cost
+       -1       variance(Cash)
+
+V(Bonds)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.0001) cost
+       -1       variance(Bonds)
+
+V(DStock)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (0.0004) cost
+       -1       variance(DStock)
+
+REMAINING ENTRY SKIPPED
+
+---- C  Variance of asset
+
+C(Cash,Cash)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (2)      cost
+       -1       corr(Cash,Cash)
+
+C(Cash,Bonds)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       (1.2)    cost
+       -1       corr(Cash,Bonds)
+
+C(Cash,DStock)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+      (-0.4)    cost
+       -1       corr(Cash,DStock)
+
+REMAINING 13 ENTRIES SKIPPED
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE Matching Using NLP From line 69
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           7     SINGLE EQUATIONS           30
+BLOCKS OF VARIABLES           6     SINGLE VARIABLES           40
+NON ZERO ELEMENTS           270     NON LINEAR N-Z            236
+DERIVATIVE POOL              20     CONSTANT POOL              39
+CODE LENGTH                 623
+
+
+GENERATION TIME      =        0.004 SECONDS      4 MB  25.1.1 r66732 DEX-DEG
+
+
+EXECUTION TIME       =        0.004 SECONDS      4 MB  25.1.1 r66732 DEX-DEG
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE Matching Using NLP From line 69
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   Matching            OBJECTIVE  z
+     TYPE    NLP                 DIRECTION  MINIMIZE
+     SOLVER  CONOPT              FROM LINE  69
+
+**** SOLVER STATUS     1 Normal Completion         
+**** MODEL STATUS      2 Locally Optimal           
+**** OBJECTIVE VALUE                0.6800
+
+ RESOURCE USAGE, LIMIT          0.020      1000.000
+ ITERATION COUNT, LIMIT        38    2000000000
+ EVALUATION ERRORS              0             0
+CONOPT 3         25.1.1 r66732 Released May 19, 2018 DEG x86 64bit/Mac OS X   
+ 
+ 
+    C O N O P T 3   version 3.17I
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 40 variables and 30 constraints
+    with 270 Jacobian elements, 236 of which are nonlinear.
+    The Hessian of the Lagrangian has 36 elements on the diagonal,
+    96 elements below the diagonal, and 39 nonlinear variables.
+ 
+ ** Warning **  The number of nonlinear derivatives equal to zero
+                in the initial point is large (= 78 percent).
+                A better initial point will probably help the
+                optimization.
+ 
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  5
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.019 seconds
+   of which: Function evaluations             0.008 = 42.1%
+             1st Derivative evaluations       0.001 =  5.3%
+             Directional 2nd Derivative       0.001 =  5.3%
+ 
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU cost                .              .              .             1.0000      
+
+  cost  SquaredError
+
+---- EQU mean  Mean definition
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+Cash            .              .              .             EPS         
+Bonds           .              .              .             EPS         
+DStock          .              .              .             EPS         
+IStock          .              .              .             EPS         
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU Prob               1.0000         1.0000         1.0000         EPS         
+---- EQU NonEq               .             0.0001        +INF             .          
+
+  Prob  Probability of Paren
+  NonEq  dont want probs to be equal
+
+---- EQU NonSmall  dont want too small probs
+
+             LOWER          LEVEL          UPPER         MARGINAL
+
+Node1         0.1000         0.1000        +INF            EPS         
+Node2         0.1000         0.3334        +INF             .          
+Node3         0.1000         0.5666        +INF             .          
+
+---- EQU corr  Correlation definition
+
+                     LOWER          LEVEL          UPPER         MARGINAL
+
+Cash  .Cash            .              .              .             0.4000      
+Cash  .Bonds           .              .              .            -0.4000      
+Cash  .DStock          .              .              .            -0.4000      
+Cash  .IStock          .              .              .             0.6000      
+Bonds .Cash            .              .              .            -0.4000      
+Bonds .Bonds           .              .              .             0.4000      
+Bonds .DStock          .              .              .              .          
+Bonds .IStock          .              .              .              .          
+DStock.Cash            .              .              .             EPS         
+DStock.Bonds           .              .              .             0.4000      
+DStock.DStock          .              .              .             0.4000      
+DStock.IStock          .              .              .            -0.4000      
+IStock.Cash            .              .              .            -0.2000      
+IStock.Bonds           .              .              .            -0.4000      
+IStock.DStock          .              .              .            -0.4000      
+IStock.IStock          .              .              .             0.4000      
+
+---- EQU variance  Variance definition
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+Cash            .              .              .       3.5344000E-5      
+Bonds           .              .              .       2.6896000E-5      
+DStock          .              .              .       7.1609759E-5      
+IStock          .              .              .       9.8595997E-5      
+
+---- VAR R  Realisation of asset at node
+
+                    LOWER          LEVEL          UPPER         MARGINAL
+
+Node1.Cash          -INF            0.0401        +INF             .          
+Node1.Bonds         -INF            0.0558        +INF             .          
+Node1.DStock        -INF            0.0380        +INF            EPS         
+Node1.IStock        -INF            0.0363        +INF             .          
+Node2.Cash          -INF            0.0405        +INF             .          
+Node2.Bonds         -INF            0.0561        +INF             .          
+Node2.DStock        -INF            0.0811        +INF             .          
+Node2.IStock        -INF            0.0869        +INF             .          
+Node3.Cash          -INF            0.0574        +INF             .          
+Node3.Bonds         -INF            0.0708        +INF             .          
+Node3.DStock        -INF            0.0709        +INF            EPS         
+Node3.IStock        -INF            0.0748        +INF             .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR z                 -INF            0.6800        +INF             .          
+
+  z  total squared error
+
+---- VAR P  Probability of Node
+
+             LOWER          LEVEL          UPPER         MARGINAL
+
+Node1          .             0.1000        +INF             .          
+Node2          .             0.3334        +INF            EPS         
+Node3          .             0.5666        +INF             .          
+
+---- VAR M  Mean of asset
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+Cash            .             0.0500        +INF      -8.295329E-9      
+Bonds           .             0.0644        +INF            EPS         
+DStock          .             0.0710        +INF             .          
+IStock          .             0.0750        +INF      -1.258299E-8      
+
+---- VAR V  Variance of asset
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+Cash            .       7.0688000E-5        +INF             .          
+Bonds           .       5.3792000E-5        +INF             .          
+DStock          .             0.0001        +INF             .          
+IStock          .             0.0002        +INF             .          
+
+---- VAR C  Variance of asset
+
+                     LOWER          LEVEL          UPPER         MARGINAL
+
+Cash  .Cash            .             0.8000        +INF            EPS         
+Cash  .Bonds           .             0.8000        +INF             .          
+Cash  .DStock          .              .            +INF             .          
+Cash  .IStock          .              .            +INF            0.8000      
+Bonds .Cash            .             0.8000        +INF             .          
+Bonds .Bonds           .             0.8000        +INF            EPS         
+Bonds .DStock          .              .            +INF            0.6000      
+Bonds .IStock          .              .            +INF            0.4000      
+DStock.Cash            .              .            +INF            0.4000      
+DStock.Bonds           .              .            +INF            1.0000      
+DStock.DStock          .             0.8000        +INF      4.2966092E-9      
+DStock.IStock          .             0.8000        +INF             .          
+IStock.Cash            .              .            +INF             .          
+IStock.Bonds           .              .            +INF             .          
+IStock.DStock          .             0.8000        +INF             .          
+IStock.IStock          .             0.8000        +INF      -3.944469E-9      
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+                             5  PROJECTED
+GAMS 25.1.1  r66732 Released May 19, 2018 DEX-DEG x86 64bit/Mac OS X - 09/16/18 15:20:05 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----     71 VARIABLE R.L  Realisation of asset at node
+
+             Cash       Bonds      DStock      IStock
+
+Node1       0.040       0.056       0.038       0.036
+Node2       0.040       0.056       0.081       0.087
+Node3       0.057       0.071       0.071       0.075
+
+
+----     71 VARIABLE P.L  Probability of Node
+
+Node1 0.100,    Node2 0.333,    Node3 0.567
+
+
+
+EXECUTION TIME       =        0.003 SECONDS      3 MB  25.1.1 r66732 DEX-DEG
+
+
+USER: GAMS Development Corporation, USA              G871201/0000CA-ANY
+      Free Demo, +1 202-342-0180, support@gams.com, www.gams.com DC0000
+
+
+**** FILE SUMMARY
+
+Input      /Users/Gustav/Documents/KU_Kandidat/OR_Modelling/Project_1/Code/Problem1.gms
+Output     /Users/Gustav/Documents/KU_Kandidat/OR_Modelling/Project_1/Code/Problem1.lst
