@@ -1,71 +1,76 @@
 Sets
-   n 'Nodes'   / Node1, Node2, Node3 /
-   a 'Assets'  / Cash,  Bonds, DStock, IStock /
-   Alias(a,ap);
+   r 'Roles' / GK, CDF, LB, RB, CMF, LW, RW, OMF, CFW, SFW /
+   f 'Formations' /442, 352, 4312, 433, 343, 4321 /
+   p 'Players' /p1*p25/;
+Display p
 
-Parameters
-Vv(a) 'Target Variance Value for each Asset'
-        / Cash               0.00008836
-          Bonds    	      0.00006724
-          DStock             0.0001790244
-          IStock             0.00024649 /
-          
-Vm(a) 'Target Mean Value for each Asset'
-        / Cash                0.050
-          Bonds    	       0.065
-          DStock              0.071
-          IStock              0.075 /;
 
-Table cr(a,ap) 'Target Correlations'
-                        Cash                   Bonds                DStock              IStock
-   Cash                 1.0                      0.6                 -0.2                -0.1
-   Bonds                0.6                      1.0                 -0.3                -0.2
-   DStock              -0.2                     -0.3                  1.0                 0.6
-   IStock              -0.1                     -0.2                  0.6                 1.0
-   ;
-
-Scalar ProbM 'Probability from parent' / 1 /
-       Wm 'Mean Weight' / 1/
-       Wv 'Variance Weight' /1/
-       Wc 'Correlation Weight' /1/
-       Wmr 'Mean Reversion Weight' /0.5/
-       Rb 'Return on bonds last period' /0.065/
-       MRL 'Mean Reversion Level' /0.0591/;
-
-Free Variables
-   R(n,a) 'Realisation of asset at node'
-   z      'total squared error';
-
-Positive Variables
-   P(n)   'Probability of Node'
-   M(a)   'Mean of asset'
-   V(a)   'Variance of asset'
-   C(a,ap)   'Variance of asset'
-   ;
-Equation
-   cost      'SquaredError'
-   mean(a)   'Mean definition'
-   Prob   'Probability of Paren'
-   NonEq 'dont want probs to be equal'
-   NonSmall(n) 'dont want too small probs'
-   corr(a,ap)   'Correlation definition'
-   variance(a) 'Variance definition'
+Table req(f,r) 'Required number of players per Formation'
+        GK     CDF     LB     RB     CMF     LW     RW     OMF     CFW     SFW
+442     1      2       1      1      2       1      1      0       2       0
+352     1      3       0      0      3       1      1      0       1       1
+4312    1      2       1      1      3       0      0      1       2       0
+433     1      2       1      1      3       0      0      0       1       2
+343     1      3       0      0      2       1      1      0       1       2
+4321    1      2       1      1      3       0      0      2       1       0
+;
+Table fitness(p,r) 'Fitness of Player at each role'
+        GK     CDF     LB     RB     CMF     LW     RW     OMF     CFW     SFW
+p1      10     0       0      0      0       0      0      0       0       0
+p2      9      0       0      0      0       0      0      0       0       0
+p3      8.5    0       0      0      0       0      0      0       0       0
+p4      0      8       6      5      4       2      2      0       0       0     
+p5      0      9       7      3      2       0      2      0       0       0
+p6      0      8       7      7      3       2      2      0       0       0
+p7      0      6       8      8      0       6      6      0       0       0
+p8      0      4       5      9      0       6      6      0       0       0
+p9      0      5       9      4      0       7      2      0       0       0
+p10     0      4       2      2      9       2      2      0       0       0
+p11     0      3       1      1      8       1      1      4       0       0
+p12     0      3       0      2      10      1      1      0       0       0
+p13     0      0       0      0      7       0      0      10      6       0
+p14     0      0       0      0      4       8      6      5       0       0
+p15     0      0       0      0      4       6      9      6       0       0
+p16     0      0       0      0      0       7      3      0       0       0
+p17     0      0       0      0      3       0      9      0       0       0
+p18     0      0       0      0      0       0      0      6       9       6
+p19     0      0       0      0      0       0      0      5       8       7
+p20     0      0       0      0      0       0      0      4       4       10
+p21     0      0       0      0      0       0      0      3       9       9
+p22     0      0       0      0      0       0      0      0       8       8
+p23     0      3       1      1      8       4      3      5       0       0
+p24     0      3       2      4      7       6      5      6       4       0
+p25     0      4       2      2      6       7      5      2       2       0
 ;
 
-cost..      z =e=  Wm*sum(a,sqr(M(a)-Vm(a)))+Wv*sum(a,sqr(V(a)-Vv(a)))  + Wc*sum((a,ap),sqr(C(a,ap)-cr(a,ap)))
-+Wmr*sqr(M('Bonds')-(0.3*MRL+(1-0.3)*Rb))    ;
+Free Variables
+   z      'total benefit';
 
-prob.. sum(n, P(n)) =e= ProbM   ;
-mean(a).. sum(n, P(n)*R(n,a)) =e= M(a);
-variance(a).. sum(n,   P(n)*sqr(R(n,a)-M(a) ) ) =e= V(a);
-corr(a,ap).. sum(n,   P(n)*(R(n,a)-M(a) )*(R(n,ap)-M(ap)  ) )/sqrt(Vv(a)*Vv(ap)) =e= C(a,ap);
+Binary Variables
+   w(f)     'What formation to choose'
+   x(p,r,f) 'Which player at each role'
+   ;
+Equation
+   total           'Total Benefit'
+   strat           'what strat/formation to choose'
+   plays(p,f)      'a player can only play one role at a time'
+   require(f,r)    'choice must comply with formation'
+;
 
-NonEq.. P('Node2') =g= P('Node1')*0.5+0.5*P('Node3');
-NonSmall(n).. P(n) =g= 0.1;
+total..      z =e=  sum((p,r,f), fitness(p,r)*x(p,r,f))   ;
+
+*You can only pick one formation
+strat.. sum(f, w(f)) =e= 1;
+
+*all players can play each role, but only one at a time
+plays(p,f).. sum(r, x(p,r,f)) =l= 1;
+
+*the amount of players allocated to a role must equal the requirement of the formation chosen
+require(f,r).. sum(p, x(p,r,f)) =e= req(f,r)*w(f);
 
 
-Model Matching / all /;
+Model FCK / all /;
 
-solve Matching using nlp minimizing z;
+solve FCK using mip maximizing z;
 
-display R.l,P.l ;
+display w.l,x.l, z.l ;

@@ -1,34 +1,25 @@
 B 2 C o m p i l a t i o n
-B 81 Equation Listing    SOLVE Matching Using NLP From line 69
-D 82 cost
-D 92 mean
-D 103 Prob
-D 108 NonEq
-D 113 NonSmall
-D 122 corr
-D 133 variance
-B 146 Column Listing      SOLVE Matching Using NLP From line 69
-E 147 R
-E 188 z
-E 195 P
-E 288 M
-E 331 V
-E 350 C
-B 371 Model Statistics    SOLVE Matching Using NLP From line 69
-B 389 Solution Report     SOLVE Matching Using NLP From line 69
-F 440 cost
-F 448 mean
-F 455 Prob
-F 456 NonEq
-F 465 NonSmall
-F 473 corr
-F 494 variance
-G 498 R
-G 515 z
-G 521 P
-G 529 M
-G 538 V
-G 547 C
-B 577 E x e c u t i o n
-I 578 R
-I 588 P
+B 86 E x e c u t i o n
+I 87 p
+B 95 Equation Listing    SOLVE FCK Using MIP From line 74
+D 96 total
+D 196 strat
+D 201 plays
+D 212 require
+B 231 Column Listing      SOLVE FCK Using MIP From line 74
+E 232 z
+E 240 w
+E 278 x
+B 302 Model Statistics    SOLVE FCK Using MIP From line 74
+B 318 Solution Report     SOLVE FCK Using MIP From line 74
+F 357 total
+F 358 strat
+F 367 plays
+F 522 require
+G 582 z
+G 588 w
+G 599 x
+B 2111 E x e c u t i o n
+I 2112 w
+I 2118 x
+I 2136 z
