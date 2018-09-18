@@ -2,7 +2,6 @@ Sets
    r 'Roles' / GK, CDF, LB, RB, CMF, LW, RW, OMF, CFW, SFW /
    f 'Formations' /442, 352, 4312, 433, 343, 4321 /
    p 'Players' /p1*p25/;
-Display p
 
 
 Table req(f,r) 'Required number of players per Formation'
