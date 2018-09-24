@@ -4,6 +4,12 @@ Sets
    k 'Keys' / k1*k30 /;
 alias(n,m)
 
+Parameters
+q   'needed connections for Security ' /3/
+t   'maximum usage of a key'           /4/
+mem 'maximum amount of keys in a node' /3/
+;
+
 Free Variables
    z      'Total Secure Connections';
 
@@ -18,30 +24,28 @@ Equation
    memory(n)       'each node can only hold 3 keys'
    identify(n,m,k) 'checking if two nodes have a a key in common'
    secure(n,m)     'if two nodes have enough keys to establish a secure connection'
-   diagonals(n)    'removing diagonals as connections'
 ;
 
-total..      z =e=  sum((n,m), w(n,m))/2   ;
+total..      z =e=  sum((n,m), w(n,m))   ;
 
-maxK(k).. sum(n, x(n,k)) =l= 4;
+maxK(k).. sum(n, x(n,k)) =l= t;
 
 *as 700kB/186kB = 3, we can only hold 3 keys in a node
-memory(n).. sum(k, x(n,k)) =l= 3;
+memory(n).. sum(k, x(n,k)) =l= mem;
 
 *if both node n and node m has key k, then the LHS will be 1, allowing h to be 1, indicating that they have key k in common
-identify(n,m,k).. (x(n,k)+x(m,k))/2 =g= h(n,m,k);
+identify(n,m,k).. ((x(n,k)+x(m,k))/2)$(ord(n)>ord(m)) =g= h(n,m,k);
 
 *same method as above, if node n and m have 3 keys in common, allow w (the secure connection counter) to be 1
-secure(n,m).. (sum(k, h(n,m,k)))/3 =g= w(n,m);
+secure(n,m).. ((sum(k, h(n,m,k)))/q)$(ord(n)>ord(m)) =g= w(n,m);
 
-*Unfortunately this program treats the issue of connections in a NxN matrix instead of simply the upper or lower triangle
-*making the problem a lot harder to solve than it should be. This is due to me not knowing how to construct and maintain
-*triangle-matrixes for the decicion variables in GAMS, something witch can easily be implemented in a proper language such as
-*Java, Python or C++. At least I set diagonals to 0, as they should not count towards "connections", likewise I devide the total
-*with 2, to remove the symmetry of the decicion variable matrix. Connection A->B and B->A is the same connection. 
-diagonals(n).. w(n,n) =e= 0;
+*I'm sure there is some smarter way of constructing the secure connection requierement, but using a double indicator dummy-
+*variable was an easy solution, but not that effecient. We usually want to avoid introducing indicators to ease computation.
 
-option threads=4;
+*The $(ord(n)>ord(m)) conditional is in order to avoid calculating on an NxN matrix, but only on the upper triangle.
+*This mean that w(a,b) will denote a connection between a and b ; w(a,b)=w(b,a). This proved to cut the calculation time in half.
+
+
 Model Keys / all /;
 
 solve Keys using mip maximizing z;
