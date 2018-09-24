@@ -55,7 +55,7 @@ Free Variables
    z      'Total Cost';
 
 Binary Variables
-   y(p) 'servicing a port or not'
+   y(p) 'if servicing a port or not'
    i(v) 'if a vessel is chosen or not'
    ;
 

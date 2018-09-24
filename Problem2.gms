@@ -36,7 +36,7 @@ memory(n).. sum(k, x(n,k)) =l= mem;
 *if both node n and node m has key k, then the LHS will be 1, allowing h to be 1, indicating that they have key k in common
 identify(n,m,k).. ((x(n,k)+x(m,k))/2)$(ord(n)>ord(m)) =g= h(n,m,k);
 
-*same method as above, if node n and m have 3 keys in common, allow w (the secure connection counter) to be 1
+*same method as above, if node n and m have 3 keys in common, allow w (the secure connection indicator) to be 1
 secure(n,m).. ((sum(k, h(n,m,k)))/q)$(ord(n)>ord(m)) =g= w(n,m);
 
 *I'm sure there is some smarter way of constructing the secure connection requierement, but using a double indicator dummy-

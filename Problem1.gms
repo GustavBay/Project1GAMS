@@ -47,7 +47,7 @@ Free Variables
 
 Binary Variables
    w(f)     'What formation to choose'
-   x(p,r,f) 'Which player at each role'
+   x(p,r,f) 'Which player at each role and formation'
    ;
 Equation
    total           'Total Benefit'
@@ -66,6 +66,7 @@ plays(p,f).. sum(r, x(p,r,f)) =l= 1;
 
 *the amount of players allocated to a role must equal the requirement of the formation chosen
 require(f,r).. sum(p, x(p,r,f)) =e= req(f,r)*w(f);
+
 
 
 Model FCK / all /;
