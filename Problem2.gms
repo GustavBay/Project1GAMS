@@ -44,7 +44,10 @@ secure(n,m).. ((sum(k, h(n,m,k)))/q)$(ord(n)>ord(m)) =g= w(n,m);
 
 *The $(ord(n)>ord(m)) conditional is in order to avoid calculating on an NxN matrix, but only on the upper triangle.
 *This mean that w(a,b) will denote a connection between a and b ; w(a,b)=w(b,a). This proved to cut the calculation time in half.
+* using the $(ord(n)>ord(m)) will set the binary h to 0 if the index is not of the upper triangle and when CPLEX imports the model
+* it will simply drop the zero-variables so it should not affect performance. 
 
+Option optcr=0.0;
 
 Model Keys / all /;
 

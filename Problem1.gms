@@ -68,6 +68,10 @@ plays(p,f).. sum(r, x(p,r,f)) =l= 1;
 require(f,r).. sum(p, x(p,r,f)) =e= req(f,r)*w(f);
 
 
+* I had to set the solver tolorance to 0, as CPLEX stopped at 99 for objective value as a "good enough" solution
+Option optcr=0.0;
+
+
 
 Model FCK / all /;
 

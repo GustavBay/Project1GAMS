@@ -100,6 +100,7 @@ InchVic..    y('Incheon')+y('Victoria') =l= 1;
 * the time a vessel spends on routes must be less than it's available up-time.
 time(v).. sum(r, w(v,r)*t(v,r)) =l= g(v);
 
+Option optcr=0.0;
 
 Model ports / all /;
 
