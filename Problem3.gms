@@ -81,7 +81,7 @@ total..      z =e=    sum(v, i(v)*f(v)) + sum((v,r), w(v,r)*c(v,r)) ;
 *must choose at least k ports to service.
 minPort.. sum(p, y(p)) =g= k;
 
-*if the number of routes made are possitive, must be 1, else allow to minimise to 0.
+*if the number of routes made are possitive, must be 1, else allow to minimise to 0. as i is Binary
 * here we devide with 500 to get a fraction. 
 fixedCost(v).. i(v) =g= sum(r, w(v,r))/500 ;
 
@@ -89,10 +89,10 @@ fixedCost(v).. i(v) =g= sum(r, w(v,r))/500 ;
 minServiced(p).. sum((v,r), x(v,r,p)) =g= d(p)*y(p);
 
 *the amount of times a port is being serviced by a vessel on a route, must be eqal the amount of times
-*the vessel takes that route and is able to service that port, as a vessel must service all ports on route
+*the vessel takes that route and is able to service that port, as a vessel must service all ports on a commenced route 
 routing(v,r,p).. x(v,r,p) =e= w(v,r)*a(p,r);
 
-*max one of these ports can be choosen to service by the company
+*max one of these ports can be choosen to be serviced by the company
 * you could make constraints based on sets, but we only have two constraints, so not necessary.
 OsakaSinga.. y('Osaka')+y('Singapore') =l= 1;
 InchVic..    y('Incheon')+y('Victoria') =l= 1;
