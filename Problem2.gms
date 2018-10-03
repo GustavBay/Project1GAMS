@@ -23,6 +23,7 @@ Equation
    maxK(k)         'each key can only be used 4 times'
    memory(n)       'each node can only hold 3 keys'
    identify(n,m,k) 'checking if two nodes have a a key in common'
+   peaceOfMind(n,m,k)     'redundant constraint for indicator logic'
    secure(n,m)     'if two nodes have enough keys to establish a secure connection'
 ;
 
@@ -35,6 +36,10 @@ memory(n).. sum(k, x(n,k)) =l= mem;
 
 *if both node n and node m has key k, then the LHS will be 1, allowing h to be 1, indicating that they have key k in common
 identify(n,m,k).. ((x(n,k)+x(m,k))/2)$(ord(n)>ord(m)) =g= h(n,m,k);
+
+*this constraint will be totally redundant as optimality will drive h to 1 when it can and be benifitial (it does not matter
+*if nodes have keys in common if they don't create secure lines anyway), but for peace of mind and the idea of an indicator:
+peaceOfMind(n,m,k).. ((x(n,k)+x(m,k))-1)$(ord(n)>ord(m)) =l= h(n,m,k);
 
 *same method as above, if node n and m have 3 keys in common, allow w (the secure connection indicator) to be 1
 secure(n,m).. ((sum(k, h(n,m,k)))/q)$(ord(n)>ord(m)) =g= w(n,m);
