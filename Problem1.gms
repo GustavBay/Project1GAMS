@@ -47,26 +47,34 @@ Free Variables
 
 Binary Variables
    w(f)     'What formation to choose'
-   x(p,r,f) 'Which player at each role and formation'
+   x(p,r) 'Which player at each role and formation'
    ;
 Equation
    total           'Total Benefit'
    strat           'what strat/formation to choose'
-   plays(p,f)      'a player can only play one role at a time'
-   require(f,r)    'choice must comply with formation'
+   plays(p)        'a player can only play one role at a time'
+   require(r)      'choice must comply with formation'
+   minQual         'have to have minimum quality'
+   balance         'of 4 qual players, must have 1 strenght'
 ;
 
-total..      z =e=  sum((p,r,f), fitness(p,r)*x(p,r,f))   ;
+total..      z =e=  sum((p,r), fitness(p,r)*x(p,r))   ;
 
 *You can only pick one formation
 strat.. sum(f, w(f)) =e= 1;
 
 *all players can play each role, but only one at a time
-plays(p,f).. sum(r, x(p,r,f)) =l= 1;
+plays(p).. sum(r, x(p,r)) =l= 1;
 
 *the amount of players allocated to a role must equal the requirement of the formation chosen
-require(f,r).. sum(p, x(p,r,f)) =e= req(f,r)*w(f);
+*as w(f) is binary, the players must only meet one requirement
+require(r).. sum(p, x(p,r)) =e= sum(f,req(f,r)*w(f));
 
+*min quality, must have at least one of these players
+minQual.. sum(r, x('p13',r) + x('p20',r) + x('p21',r) + x('p22',r)  ) =g= 1;
+
+*balance, if lhs is 1, i.e. all players are employed, rhs must be >= 1, else can be 0.
+balance.. sum(r, x('p13',r) + x('p20',r) + x('p21',r) + x('p22',r))-3 =l= sum(r, x('p10',r) + x('p12',r) + x('p23',r))
 
 * I had to set the solver tolorance to 0, as CPLEX stopped at 99 for objective value as a "good enough" solution
 Option optcr=0.0;
