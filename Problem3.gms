@@ -82,8 +82,8 @@ total..      z =e=    sum(v, i(v)*f(v)) + sum((v,r), w(v,r)*c(v,r)) ;
 minPort.. sum(p, y(p)) =g= k;
 
 *if the number of routes made are possitive, must be 1, else allow to minimise to 0. as i is Binary
-* here we devide with 500 to get a fraction. 
-fixedCost(v).. i(v) =g= sum(r, w(v,r))/500 ;
+* here we devide with g(v) to act as a big M. 
+fixedCost(v).. i(v) =g= sum(r, w(v,r))/g(v) ;
 
 *a port must be serviced its minimum amount of times if chosen
 minServiced(p).. sum((v,r), x(v,r,p)) =g= d(p)*y(p);
